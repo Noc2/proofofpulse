@@ -64,6 +64,12 @@ Verifier
 
 ## Repository Map
 
+- `apps/api/` - dependency-free local API for challenges, development app-integrity registration, proof submission, replay checks, and public proof lookup.
+- `apps/simulator/` - local simulator that creates a synthetic challenge-bound Pulse Proof and submits it to the API flow.
+- `apps/ios/ProofOfPulseKit/` - Swift package skeleton for read-only HealthKit collection and coarse feature extraction.
+- `packages/core/` - shared scoring, challenge hashing, proof-envelope creation, and proof-envelope validation logic.
+- `circuits/pulse-score-v0/` - Noir-style ZK score-threshold circuit spike over synthetic coarse feature buckets.
+- `docs/local-poc.md` - how to run and inspect the current local PoC.
 - `docs/poc-plan.md` - initial proof-of-concept plan and milestones.
 - `docs/research-notes.md` - current platform and privacy constraints.
 - `docs/proof-envelope.md` - draft proof payload shape.
@@ -72,4 +78,21 @@ Verifier
 
 ## Status
 
-Initialized on 2026-07-08. This repository currently contains planning and architecture notes for the first POC.
+Initialized on 2026-07-08. The repository now contains a runnable local PoC:
+
+- deterministic `pulse-score-v0` scoring over coarse feature buckets;
+- challenge-bound proof-envelope generation and validation;
+- local API replay protection and public proof status lookup;
+- development-only app-integrity and mock-ZK hooks;
+- simulator CLI for a complete synthetic proof flow;
+- iOS HealthKit collector skeleton for read-only, on-device feature extraction;
+- a ZK score-threshold circuit spike ready for real Noir tooling.
+
+Run the local simulator:
+
+```sh
+npm test
+npm run simulate
+```
+
+The current PoC still does not prove Apple Watch sensor provenance, real Apple App Attest validation, real ZK proof generation, or global unique humanity. Those remain explicit next layers.
