@@ -2,7 +2,7 @@
 
 ## POC Question
 
-Can Proof of Pulse generate a short-lived, privacy-preserving proof that a request is backed by recent wearable physiology or activity data from a real Apple device, without uploading raw Apple Health data?
+Can Proof of Pulse generate a short-lived, privacy-preserving proof that a request is backed by recent wearable physiology or activity data from a real Apple device, without uploading raw Apple Health data, and can that proof evolve into a component of a unique-humanity credential?
 
 ## Hypothesis
 
@@ -11,9 +11,10 @@ Apple Health data alone is not a secure proof of humanity because apps and users
 - HealthKit source and metadata filtering.
 - Recent Apple Watch-oriented signals.
 - On-device scoring and data minimization.
+- Zero-knowledge proof of score-threshold or anonymous group membership.
 - Server-issued one-time challenges.
 - App Attest validation for client integrity.
-- Explicitly modest claims about liveness, not uniqueness.
+- Explicit separation between liveness and global uniqueness.
 
 ## Target Claim
 
@@ -25,6 +26,14 @@ At time T, this legitimate app instance evaluated local HealthKit samples for a 
 
 This does not prove that the user is unique, that they own the watch, or that every sample was sensor-authenticated.
 
+The aspirational end-state claim is stronger:
+
+```text
+The presenter controls a credential admitted to a unique-humanity set and can produce a fresh Pulse liveness proof for this verifier/action without revealing raw health data, biometric data, or a cross-site identifier.
+```
+
+This stronger claim requires an explicit uniqueness issuer or deduplication process. A wearable liveness signal alone cannot provide global uniqueness.
+
 ## MVP User Flow
 
 1. User installs the iOS app.
@@ -34,9 +43,10 @@ This does not prove that the user is unique, that they own the watch, or that ev
 5. App reads a recent window of HealthKit samples.
 6. App filters out samples marked as user-entered and prioritizes samples with Apple Watch-like source/device metadata.
 7. App computes a local score and creates a proof envelope.
-8. App signs or submits the envelope with App Attest-backed assertions.
-9. API verifies challenge freshness, App Attest state, envelope schema, score threshold, and replay state.
-10. API returns a short-lived proof ID.
+8. App optionally creates a ZK proof that the private feature vector passes the published scoring policy.
+9. App signs or submits the envelope with App Attest-backed assertions.
+10. API verifies challenge freshness, App Attest state, ZK proof if present, envelope schema, score threshold, and replay state.
+11. API returns a short-lived proof ID or admits the user's identity commitment to an anonymous proof group.
 
 V0 should request read permissions only. Writing data to HealthKit creates avoidable App Review and trust risk, and it is not needed for proof generation.
 
@@ -56,6 +66,17 @@ Avoid collecting reproductive, clinical, medication, diagnosis, or mental-health
 Treat missing samples carefully. HealthKit intentionally hides whether read permission was denied for a data type, and users may grant only a limited recent history window. A sparse result should produce an "insufficient signal" state, not a claim that no data exists.
 
 Treat source and device metadata as confidence input only. Some HealthKit device fields are arbitrary strings, and app-created samples can include device and metadata values. High-confidence V0 scoring should prefer Apple/system sources and reject third-party-written samples, but it must not claim cryptographic Apple Watch sample provenance.
+
+## ZK Strategy
+
+ZK should be used for privacy and unlinkability, not as a substitute for input provenance.
+
+The POC should explore two complementary tracks:
+
+- Custom score circuit: prove that private coarse features satisfy the published `pulse-score-v0` threshold without revealing the feature vector.
+- Anonymous membership proof: after a user passes issuance, add a commitment to a group and let them later prove membership with per-verifier or per-action nullifiers.
+
+For mobile practicality, Semaphore is attractive for the membership/nullifier layer because it already models identity commitments, Merkle groups, scopes, nullifiers, proof generation, and verification. For custom score logic, Noir or Circom are better candidates for a small threshold circuit; a zkVM such as RISC Zero is useful later if the scoring algorithm becomes complex enough that writing a circuit is too expensive.
 
 ## Scoring Model V0
 
@@ -81,6 +102,7 @@ The app should emit only:
 - Challenge hash.
 - App Attest key ID/assertion reference.
 - Scoring algorithm version.
+- ZK proof reference or inline proof, when enabled.
 
 ## Backend V0
 
@@ -92,6 +114,8 @@ The first API can be intentionally small:
   - stores App Attest public-key state after attestation verification.
 - `POST /v1/pulse-proofs`
   - verifies challenge, App Attest assertion, proof schema, score threshold, and replay state.
+- `POST /v1/pulse-commitments`
+  - admits an identity commitment to an anonymous proof group after a high-confidence proof.
 - `GET /v1/pulse-proofs/:id`
   - returns public proof status, expiration, and claim summary.
 
@@ -104,6 +128,7 @@ Store only proof metadata:
 - Account or wallet hash, if the POC binds proofs to accounts.
 - App Attest key state and assertion counter.
 - Coarse score tier, source-confidence tier, algorithm version, and expiration.
+- ZK proof verification result, public inputs, verifier/action scope, and nullifier hash.
 - Abuse counters.
 
 Do not store raw HealthKit samples, exact heart-rate values, exact workout details, routes, source device names, or stable HealthKit device identifiers.
@@ -133,7 +158,15 @@ Do not store raw HealthKit samples, exact heart-rate values, exact workout detai
 - Reject stale or replayed challenges.
 - Handle HealthKit limited-authorization windows as an explicit scoring input.
 
-### Milestone 3: App Attest Integration
+### Milestone 3: ZK Score Circuit Spike
+
+- Define the public/private inputs for `pulse-score-v0`.
+- Implement a tiny threshold proof over synthetic feature buckets in Noir or Circom.
+- Verify the proof server-side.
+- Document proving time and mobile feasibility.
+- Keep this spike independent from real HealthKit data until the circuit is correct.
+
+### Milestone 4: App Attest Integration
 
 - Generate App Attest key per install/account.
 - Verify attestation server-side.
@@ -141,7 +174,15 @@ Do not store raw HealthKit samples, exact heart-rate values, exact workout detai
 - Track assertion counters and challenge binding.
 - Define the fallback behavior when App Attest is unavailable on a device.
 
-### Milestone 4: Privacy Review And Red-Team Pass
+### Milestone 5: Anonymous Membership POC
+
+- Generate a local ZK identity commitment.
+- Add commitments that passed high-confidence liveness to a group.
+- Generate a proof of group membership with a verifier/action-scoped nullifier.
+- Verify one-proof-per-scope behavior.
+- Evaluate Semaphore mobile SDK feasibility for iOS.
+
+### Milestone 6: Privacy Review And Red-Team Pass
 
 - Confirm no raw health samples leave the device.
 - Add explicit in-app consent copy.
@@ -149,11 +190,13 @@ Do not store raw HealthKit samples, exact heart-rate values, exact workout detai
 - Review App Store health-data rules.
 - Document attack paths and what the proof does not claim.
 
-### Milestone 5: Credential Path Decision
+### Milestone 7: Unique-Humanity Path Decision
 
-- Decide whether a Pulse Proof should remain an API lookup or become a signed credential.
+- Decide whether a Pulse Proof should remain an API lookup, anonymous group membership proof, or signed credential.
 - Evaluate short-lived SD-JWT or verifiable-credential style presentation.
-- Defer BBS or zero-knowledge proofs until the input features and provenance limits are well understood.
+- Evaluate BBS derived proofs for selective disclosure credentials.
+- Decide what uniqueness issuer or deduplication process is required for a real proof-of-unique-humanity claim.
+- Treat World ID-style proof-of-human systems as reference architecture for nullifiers, unlinkability, user-presence checks, and issuance/dedup boundaries.
 
 ## Acceptance Criteria For Initial POC
 
@@ -161,6 +204,8 @@ Do not store raw HealthKit samples, exact heart-rate values, exact workout detai
 - A tester without enough recent wearable-backed data receives a clear local failure state.
 - Server rejects replayed challenges.
 - Server rejects proof submissions without valid app integrity evidence.
+- Server verifies the ZK score proof for synthetic POC inputs.
+- Server verifies anonymous membership and rejects duplicate nullifiers for the same scope.
 - Public verifier sees only proof status and a coarse claim, not health samples.
 - README and docs clearly state the limits of the proof.
 - Replayed proofs and multiple proofs per account/device/epoch are detectable.
@@ -173,6 +218,8 @@ Do not store raw HealthKit samples, exact heart-rate values, exact workout detai
 - A determined attacker may synthesize plausible HealthKit history.
 - App Attest raises the cost of fake clients but does not prove the health data came from a body.
 - DeviceCheck can support repeat-device flags and rate limits, but it is not an identity primitive.
+- ZK proves correct computation over committed inputs, not truth or sensor provenance of those inputs.
+- Anonymous membership proves admission to a group, not that admission was globally unique unless the issuer process is Sybil-resistant.
 - Strong Sybil resistance needs more than one device-local health signal.
 - Health data is highly sensitive and creates GDPR/App Store risk if mishandled.
 - App Review risk increases if the product is framed as a generic proof-of-human gate rather than a clear health/fitness user benefit.
@@ -187,3 +234,5 @@ Do not store raw HealthKit samples, exact heart-rate values, exact workout detai
 - Should V0 expose only score tiers instead of exact scores?
 - What nullifier design prevents replay without becoming a cross-site tracking handle?
 - Is there a user-facing health/fitness benefit strong enough to satisfy HealthKit policy when the proof is used by external verifiers?
+- Which ZK stack should own the first score-threshold proof: Noir, Circom, or a zkVM?
+- Should the unique-humanity endgame integrate an existing proof-of-human credential, build its own issuer, or support multiple issuers?

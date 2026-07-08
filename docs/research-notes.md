@@ -22,6 +22,12 @@ These notes record the assumptions behind the initial Proof of Pulse POC plan. T
 - Apple treats health and fitness data as especially sensitive. The app should not use HealthKit-derived data for advertising, marketing, or data mining, and should avoid raw health-data transmission.
 - Apps using HealthKit need HealthKit usage descriptions and a privacy policy.
 - App Store review risk is material if the app's main value proposition is a generic proof-of-human gate rather than a clear health or fitness purpose.
+- Zero-knowledge proofs are useful for proving score-threshold, credential, or group-membership claims without revealing private inputs.
+- ZK cannot prove that private inputs are truthful or sensor-originated unless those inputs are themselves authenticated.
+- Semaphore provides identity commitments, groups, ZK membership proofs, scopes, and nullifiers that map closely to anonymous Pulse Proof presentation.
+- Semaphore has community-maintained mobile SDKs for native proof generation on iOS and other mobile platforms.
+- World ID's current docs are a useful reference architecture for proof-of-human flows: credentials, ZK proofs, app/action nullifiers, and optional user-presence/liveness checks.
+- W3C BBS cryptosuites and IETF SD-JWT are relevant for later selective-disclosure credential presentations.
 
 ## Practical POC Implications
 
@@ -39,6 +45,8 @@ These notes record the assumptions behind the initial Proof of Pulse POC plan. T
 - Keep the first proof short-lived to reduce tracking and replay value.
 - Prefer score tiers and confidence labels over exact numeric scores in public or verifier-facing outputs.
 - Keep abuse monitoring detached from raw health data.
+- Use ZK first for synthetic score-threshold proofs and anonymous membership, then integrate with real HealthKit only after circuit correctness and privacy review.
+- Keep the long-term unique-humanity design issuer-agnostic: Pulse can combine with a World ID-style proof, document-backed credential, in-person issuance, or a future privacy-preserving biometric dedup service.
 
 ## Sources
 
@@ -60,6 +68,16 @@ These notes record the assumptions behind the initial Proof of Pulse POC plan. T
 - App Privacy Details, Health and Fitness data categories: https://developer.apple.com/app-store/app-privacy-details/
 - NIST SP 800-63B, biometric and authenticator guidance: https://pages.nist.gov/800-63-4/sp800-63b.html
 - Douceur, The Sybil Attack: https://www.microsoft.com/en-us/research/publication/the-sybil-attack/
+- Personhood credentials paper: https://arxiv.org/abs/2408.07892
+- Semaphore documentation: https://docs.semaphore.pse.dev/
+- Semaphore proofs guide: https://docs.semaphore.pse.dev/guides/proofs
+- Semaphore mobile SDKs: https://docs.semaphore.pse.dev/mobile
+- Noir documentation: https://noir-lang.org/docs/
+- Circom documentation: https://docs.circom.io/
+- RISC Zero zkVM overview: https://dev.risczero.com/api/zkvm/
+- World ID overview: https://docs.world.org/world-id/overview
+- World ID core concepts: https://docs.world.org/world-id/concepts
+- World ID Proof of Human credential: https://docs.world.org/world-id/credentials/1
 - W3C Verifiable Credentials Data Model 2.0: https://www.w3.org/TR/vc-data-model-2.0/
 - IETF RFC 9901, Selective Disclosure for JWTs: https://datatracker.ietf.org/doc/rfc9901/
 - W3C BBS Cryptosuites: https://www.w3.org/TR/vc-di-bbs/
@@ -73,3 +91,6 @@ These notes record the assumptions behind the initial Proof of Pulse POC plan. T
 - Evaluate future zero-knowledge proof options after the feature set stabilizes.
 - Investigate credential formats for unlinkable or selectively disclosed future proofs.
 - Test whether real Apple Watch samples expose any useful digital-signature metadata.
+- Prototype a score-threshold circuit over synthetic coarse features.
+- Prototype Semaphore-style anonymous membership with verifier/action-scoped nullifiers.
+- Compare unique-humanity issuance paths: World ID integration, document-backed credentials, in-person verification, and privacy-preserving biometric dedup.
