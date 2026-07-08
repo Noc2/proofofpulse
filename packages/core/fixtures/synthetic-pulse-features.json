@@ -1,0 +1,11 @@
+{
+  "windowStartedAt": "2026-07-08T06:00:00.000Z",
+  "windowEndedAt": "2026-07-08T18:00:00.000Z",
+  "recencyBucket": "under_6h",
+  "sourceConfidence": "watch_likely",
+  "signalCount": 4,
+  "continuityBucket": "moderate",
+  "userEnteredSamplesExcluded": true,
+  "authorizationWindow": "full_or_unknown",
+  "digitalSignatureObserved": false
+}

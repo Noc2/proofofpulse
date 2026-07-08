@@ -1,0 +1,15 @@
+{
+  "name": "proofofpulse",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Proof of Pulse proof-of-concept workspace.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "api": "node apps/api/src/server.js",
+    "simulate": "node apps/simulator/src/cli.js"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
