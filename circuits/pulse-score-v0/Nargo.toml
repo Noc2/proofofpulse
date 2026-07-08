@@ -1,0 +1,6 @@
+[package]
+name = "pulse_score_v0"
+type = "bin"
+authors = ["Proof of Pulse"]
+
+[dependencies]

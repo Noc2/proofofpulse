@@ -1,0 +1,20 @@
+# Example witness/public input file for the pulse-score-v0 spike.
+# These values intentionally use synthetic coarse buckets, not raw HealthKit data.
+
+# Public inputs
+challenge_hash = "123456789"
+policy_version = "0"
+expires_at_epoch_minutes = "29745545"
+min_expires_at_epoch_minutes = "29745540"
+max_expires_at_epoch_minutes = "29745550"
+threshold_score = "180"
+high_threshold_score = "240"
+claimed_score_tier = "1"
+feature_commitment = "124779136"
+
+# Private witness inputs
+recency_bucket = "3"
+continuity_bucket = "2"
+source_confidence_bucket = "2"
+signal_count_bucket = "3"
+user_entered_samples_excluded = true
