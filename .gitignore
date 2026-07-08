@@ -8,6 +8,8 @@ xcuserdata/
 # Swift Package Manager
 .build/
 .swiftpm/
+.swiftpm-cache/
+.clang-module-cache/
 
 # Node / TypeScript services
 node_modules/
@@ -21,4 +23,3 @@ coverage/
 *.sqlite
 *.sqlite3
 *.db
-
