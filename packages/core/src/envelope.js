@@ -113,10 +113,12 @@ export function validateProofEnvelope(envelope, challenge, {
   };
 }
 
-export function toPublicProofStatus(id, envelope, { zkVerified = false } = {}) {
+export function toPublicProofStatus(id, envelope, { zkVerified = false, now = new Date() } = {}) {
+  const nowMs = new Date(now).getTime();
+
   return {
     id,
-    status: Date.parse(envelope.expiresAt) > Date.now() ? "valid" : "expired",
+    status: Date.parse(envelope.expiresAt) > nowMs ? "valid" : "expired",
     claim: envelope.claim,
     issuedAt: envelope.issuedAt,
     expiresAt: envelope.expiresAt,

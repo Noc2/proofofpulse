@@ -92,7 +92,7 @@ async function submitProof({ body, store, now }) {
   store.markChallengeUsed(challenge.id, now);
 
   const id = randomId("pp");
-  const publicStatus = toPublicProofStatus(id, envelope, { zkVerified: zk.verified });
+  const publicStatus = toPublicProofStatus(id, envelope, { zkVerified: zk.verified, now });
   const proof = store.storeProof({
     id,
     envelope,
