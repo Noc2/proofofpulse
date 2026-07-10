@@ -73,6 +73,10 @@ Verifier
 - `design/proof-of-pulse-iphone-mockup.html` - standalone visual mockup that inspired the native iPhone UI.
 - `docs/local-poc.md` - how to run and inspect the current local PoC.
 - `docs/iphone-app-implementation-plan.md` - detailed plan used to implement the first native iPhone app.
+- `docs/production-readiness-plan.md` - phased roadmap from local PoC to TestFlight and production readiness.
+- `docs/privacy-policy-draft.md` - pilot privacy-policy draft and App Store data inventory.
+- `docs/app-store-review-notes.md` - TestFlight/App Store review-notes draft.
+- `docs/real-device-test-matrix.md` - physical-device validation matrix for HealthKit and release behavior.
 - `docs/poc-plan.md` - initial proof-of-concept plan and milestones.
 - `docs/research-notes.md` - current platform and privacy constraints.
 - `docs/proof-envelope.md` - draft proof payload shape.

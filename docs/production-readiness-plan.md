@@ -2,6 +2,10 @@
 
 Last reviewed: 2026-07-10.
 
+## Implementation Status
+
+This plan is being implemented incrementally. The repo now includes first-pass release-hardening scaffolding, production-mode API guardrails for the current proof stubs, a privacy-policy draft, App Store review-notes draft, and a real-device validation matrix. The hard trust layers are still open: real App Attest server validation, durable Postgres-backed replay state, real ZK proof generation/verification, real signing/App Store metadata, and a unique-humanity issuer.
+
 ## Readiness Verdict
 
 Proof of Pulse is a useful local PoC, not a production proof-of-humanity system yet. The current app can demonstrate the user experience, collect or simulate coarse HealthKit-derived signals, create a challenge-bound envelope, and submit it to a local verifier. It should not yet be used for access control, rewards, token distribution, account uniqueness, or any relying-party decision that assumes a verified human.
@@ -31,8 +35,8 @@ The biggest current gaps are:
 - ZK verification still accepts `mock-score-threshold-v0`, and the circuit uses a toy commitment.
 - API state is in memory, so replay protection disappears on restart and cannot support multi-instance deployment.
 - The iOS app still exposes development settings such as local HTTP API configuration.
-- Release signing, App Store metadata, privacy policy, privacy labels, production bundle ID, app icon, and review notes are not in place.
-- No real-device HealthKit/Apple Watch validation matrix is checked into the repo.
+- Release signing, App Store metadata, privacy labels, production bundle ID, app icon, and final review notes are not in place.
+- A real-device HealthKit/Apple Watch validation matrix is checked in, but the matrix has not been executed yet.
 
 ## Production Milestones
 
