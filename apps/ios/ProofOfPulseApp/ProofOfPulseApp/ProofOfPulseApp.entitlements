@@ -4,5 +4,7 @@
 <dict>
 	<key>com.apple.developer.healthkit</key>
 	<true/>
+	<key>com.apple.developer.devicecheck.appattest-environment</key>
+	<string>$(PROOF_OF_PULSE_APP_ATTEST_ENVIRONMENT)</string>
 </dict>
 </plist>

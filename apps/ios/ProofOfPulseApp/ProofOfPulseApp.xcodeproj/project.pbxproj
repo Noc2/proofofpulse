@@ -306,7 +306,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = ProofOfPulseApp/Info.plist;
+				INFOPLIST_FILE = "ProofOfPulseApp/Info-Debug.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -315,6 +315,8 @@
 				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.proofofpulse.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROOF_OF_PULSE_API_BASE_URL = "http://127.0.0.1:8787";
+				PROOF_OF_PULSE_APP_ATTEST_ENVIRONMENT = development;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -342,6 +344,8 @@
 				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.proofofpulse.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROOF_OF_PULSE_API_BASE_URL = "https://api.proofofpulse.example";
+				PROOF_OF_PULSE_APP_ATTEST_ENVIRONMENT = production;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;

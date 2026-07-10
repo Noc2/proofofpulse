@@ -76,7 +76,7 @@ private struct PulseHomeView: View {
                         .foregroundStyle(PulseTheme.ink)
                         .frame(maxWidth: 310)
 
-                    Text("Recent wearable-backed signals can become a short-lived private proof.")
+                    Text("Recent local signal buckets can become a short-lived private liveness summary.")
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(PulseTheme.muted)
                         .multilineTextAlignment(.center)
@@ -215,7 +215,7 @@ private struct ProofPanel: View {
             HStack(spacing: 10) {
                 MetricCard(title: "Fresh", value: viewModel.freshnessLabel)
                 MetricCard(title: "\(viewModel.features.signalCount) modes", value: "detected")
-                MetricCard(title: "ZK", value: viewModel.lastProof?.zkVerified == true ? "verified" : "private")
+                MetricCard(title: "ZK", value: viewModel.zkStatusLabel)
             }
 
             Button {
@@ -399,29 +399,46 @@ private struct PulseSettingsView: View {
 
             VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("LOCAL API")
+                    Text(viewModel.allowsDevelopmentSettings ? "LOCAL API" : "API")
                         .font(.system(size: 12, weight: .bold))
                         .tracking(2)
                         .foregroundStyle(PulseTheme.muted)
 
-                    TextField("http://127.0.0.1:8787", text: $viewModel.apiBaseURLString)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .keyboardType(.URL)
-                        .font(.system(size: 14, weight: .bold, design: .monospaced))
-                        .padding(12)
-                        .background(Color.black.opacity(0.16), in: RoundedRectangle(cornerRadius: 8))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                        )
+                    if viewModel.allowsDevelopmentSettings {
+                        TextField("http://127.0.0.1:8787", text: $viewModel.apiBaseURLString)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .keyboardType(.URL)
+                            .font(.system(size: 14, weight: .bold, design: .monospaced))
+                            .padding(12)
+                            .background(Color.black.opacity(0.16), in: RoundedRectangle(cornerRadius: 8))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                            )
+                    } else {
+                        Text(viewModel.apiBaseURLString)
+                            .font(.system(size: 14, weight: .bold, design: .monospaced))
+                            .foregroundStyle(PulseTheme.ink)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.72)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(12)
+                            .background(Color.black.opacity(0.16), in: RoundedRectangle(cornerRadius: 8))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                            )
+                    }
                 }
 
-                Toggle("Use demo signal", isOn: $viewModel.useDemoSignal)
-                    .font(.system(size: 15, weight: .bold))
-                    .tint(PulseTheme.green)
+                if viewModel.allowsDevelopmentSettings {
+                    Toggle("Use demo signal", isOn: $viewModel.useDemoSignal)
+                        .font(.system(size: 15, weight: .bold))
+                        .tint(PulseTheme.green)
+                }
 
-                Text("For simulator testing, keep demo signal enabled. For real device testing, disable it and grant HealthKit read access.")
+                Text(viewModel.allowsDevelopmentSettings ? "For simulator testing, keep demo signal enabled. For real device testing, disable it and grant HealthKit read access." : "\(viewModel.runtimeModeLabel) build. Demo signal and local API editing are disabled.")
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(PulseTheme.muted)
                     .lineSpacing(4)

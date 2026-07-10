@@ -22,10 +22,17 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Proof of Pulse reads recent activity and heart signals to create a privacy-preserving liveness summary on this device. Raw health samples are not uploaded.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Proof of Pulse connects to your local development API while testing Pulse Proof creation.</string>
 	<key>ProofOfPulseAPIBaseURL</key>
-	<string>$(PROOF_OF_PULSE_API_BASE_URL)</string>
+	<string>http://127.0.0.1:8787</string>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>

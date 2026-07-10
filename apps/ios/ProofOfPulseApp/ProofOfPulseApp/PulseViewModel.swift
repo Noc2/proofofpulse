@@ -41,10 +41,16 @@ final class PulseViewModel: ObservableObject {
         let initialFeatures = PulseDemoData.watchLikelyFeatures()
         self.features = initialFeatures
         self.score = PulseScoring.score(initialFeatures)
-        self.apiBaseURLString = UserDefaults.standard.string(forKey: Self.apiBaseURLDefaultsKey)
-            ?? "http://127.0.0.1:8787"
+        if PulseRuntime.allowsDevelopmentSettings {
+            self.apiBaseURLString = UserDefaults.standard.string(forKey: Self.apiBaseURLDefaultsKey)
+                ?? PulseRuntime.defaultAPIBaseURLString
+        } else {
+            self.apiBaseURLString = PulseRuntime.defaultAPIBaseURLString
+        }
 
-        if UserDefaults.standard.object(forKey: Self.demoSignalDefaultsKey) == nil {
+        if !PulseRuntime.allowsDemoSignal {
+            self.useDemoSignal = false
+        } else if UserDefaults.standard.object(forKey: Self.demoSignalDefaultsKey) == nil {
             #if targetEnvironment(simulator)
             self.useDemoSignal = true
             #else
@@ -57,6 +63,22 @@ final class PulseViewModel: ObservableObject {
 
     var isRunning: Bool {
         runState == .collecting || runState == .submitting
+    }
+
+    var allowsDevelopmentSettings: Bool {
+        PulseRuntime.allowsDevelopmentSettings
+    }
+
+    var runtimeModeLabel: String {
+        PulseRuntime.modeLabel
+    }
+
+    var zkStatusLabel: String {
+        guard lastProof?.zkVerified == true else {
+            return "private"
+        }
+
+        return PulseRuntime.allowsDevelopmentSettings ? "mock" : "verified"
     }
 
     var sourceLabel: String {
@@ -140,6 +162,10 @@ final class PulseViewModel: ObservableObject {
     }
 
     private func collectFeatures() async throws -> PulseFeatures {
+        guard PulseRuntime.allowsDemoSignal || !useDemoSignal else {
+            throw PulseViewModelError.demoSignalUnavailable
+        }
+
         if useDemoSignal {
             return PulseDemoData.watchLikelyFeatures()
         }
@@ -165,11 +191,39 @@ final class PulseViewModel: ObservableObject {
 
 enum PulseViewModelError: Error, LocalizedError {
     case invalidAPIBaseURL
+    case demoSignalUnavailable
 
     var errorDescription: String? {
         switch self {
         case .invalidAPIBaseURL:
             return "The API base URL is invalid."
+        case .demoSignalUnavailable:
+            return "Demo signal is unavailable in this build."
         }
+    }
+}
+
+private enum PulseRuntime {
+    #if DEBUG
+    static let allowsDevelopmentSettings = true
+    static let allowsDemoSignal = true
+    static let modeLabel = "Debug POC"
+    #else
+    static let allowsDevelopmentSettings = false
+    static let allowsDemoSignal = false
+    static let modeLabel = "Release"
+    #endif
+
+    static var defaultAPIBaseURLString: String {
+        if let configured = Bundle.main.object(forInfoDictionaryKey: "ProofOfPulseAPIBaseURL") as? String,
+           configured.contains("://") {
+            return configured
+        }
+
+        #if DEBUG
+        return "http://127.0.0.1:8787"
+        #else
+        return "https://api.proofofpulse.example"
+        #endif
     }
 }
