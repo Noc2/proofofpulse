@@ -47,7 +47,9 @@ public struct PulseAPIClient: Sendable {
         body: Body,
         responseType: Output.Type
     ) async throws -> Output {
-        let url = baseURL.appendingPathComponent(path.trimmingCharacters(in: CharacterSet(charactersIn: "/")))
+        guard let url = URL(string: path, relativeTo: baseURL)?.absoluteURL else {
+            throw PulseAPIError.invalidResponse
+        }
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "content-type")
