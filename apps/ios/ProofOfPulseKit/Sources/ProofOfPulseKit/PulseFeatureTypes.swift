@@ -9,6 +9,8 @@ public enum PulseKitError: Error, LocalizedError {
     case healthKitUnavailable
     case missingHealthKitObjectType(String)
     case invalidWindow
+    case encodingFailed
+    case cryptoUnavailable
 
     public var errorDescription: String? {
         switch self {
@@ -20,6 +22,10 @@ public enum PulseKitError: Error, LocalizedError {
             return "HealthKit object type is unavailable: \(identifier)."
         case .invalidWindow:
             return "Pulse collection window must have a start date before its end date."
+        case .encodingFailed:
+            return "Pulse proof data could not be encoded."
+        case .cryptoUnavailable:
+            return "CryptoKit is unavailable for this build target."
         }
     }
 }
