@@ -76,6 +76,40 @@ swift package --package-path apps/ios/ProofOfPulseKit describe
 xcrun --sdk iphonesimulator swiftc -target arm64-apple-ios15.0-simulator -parse-as-library -typecheck apps/ios/ProofOfPulseKit/Sources/ProofOfPulseKit/PulseFeatureTypes.swift apps/ios/ProofOfPulseKit/Sources/ProofOfPulseKit/HealthKitPulseCollector.swift
 ```
 
+## iPhone App
+
+`apps/ios/ProofOfPulseApp` is a native SwiftUI iPhone app target based on `design/proof-of-pulse-iphone-mockup.html`.
+
+Build it from the repo root:
+
+```sh
+npm run ios:list
+npm run ios:build
+```
+
+Run it from Xcode:
+
+1. Start the local API:
+
+   ```sh
+   npm run api
+   ```
+
+2. Open `apps/ios/ProofOfPulseApp/ProofOfPulseApp.xcodeproj`.
+3. Select the `ProofOfPulseApp` scheme and an iPhone simulator.
+4. Keep `Use demo signal` enabled in the Keys tab.
+5. Tap `Create Pulse Proof`.
+
+For real iPhone + Apple Watch testing:
+
+1. Start the API on a LAN-reachable host.
+2. Set the app's API URL to that LAN address in the Keys tab.
+3. Disable `Use demo signal`.
+4. Grant read-only HealthKit access.
+5. Tap `Create Pulse Proof`.
+
+The app still uses `development-app-attest` and `mock-score-threshold-v0`. It can test the UI, HealthKit collection path, scoring, envelope creation, and local API submission, but it does not yet perform real Apple App Attest validation or real ZK proving.
+
 ## ZK Circuit Spike
 
 `circuits/pulse-score-v0` contains a Noir-style threshold circuit over private coarse buckets. It is source-controlled for review, but `nargo` was not installed in the local environment used for this implementation.

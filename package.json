@@ -7,7 +7,9 @@
   "scripts": {
     "test": "node --test",
     "api": "node apps/api/src/server.js",
-    "simulate": "node apps/simulator/src/cli.js"
+    "simulate": "node apps/simulator/src/cli.js",
+    "ios:build": "xcodebuild -project apps/ios/ProofOfPulseApp/ProofOfPulseApp.xcodeproj -scheme ProofOfPulseApp -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build",
+    "ios:list": "xcodebuild -list -project apps/ios/ProofOfPulseApp/ProofOfPulseApp.xcodeproj"
   },
   "engines": {
     "node": ">=24"
