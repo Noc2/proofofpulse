@@ -1,7 +1,10 @@
 import { createServer } from "node:http";
 import { createApi } from "./app.js";
 
-export function startServer({ port = process.env.PORT ?? 8787, host = "127.0.0.1" } = {}) {
+export function startServer({
+  port = process.env.PORT ?? 8787,
+  host = process.env.HOST ?? "127.0.0.1"
+} = {}) {
   const api = createApi();
   const server = createServer(async (request, response) => {
     const webRequest = new Request(`http://${request.headers.host}${request.url}`, {
