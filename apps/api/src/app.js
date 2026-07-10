@@ -6,7 +6,16 @@ import {
 import { createMemoryStore } from "./store.js";
 import { verifyZkEvidence } from "./zk.js";
 
-export function createApi({ store = createMemoryStore(), now = () => new Date() } = {}) {
+const DEFAULT_MAX_JSON_BODY_BYTES = 64 * 1024;
+
+export function createApi({
+  store = createMemoryStore(),
+  now = () => new Date(),
+  environment = process.env.NODE_ENV ?? "development",
+  maxJsonBodyBytes = DEFAULT_MAX_JSON_BODY_BYTES
+} = {}) {
+  const productionMode = environment === "production";
+
   return async function handleRequest(request) {
     const url = new URL(request.url);
 
@@ -20,7 +29,17 @@ export function createApi({ store = createMemoryStore(), now = () => new Date() 
     }
 
     if (request.method === "POST" && url.pathname === "/v1/app-attest/register") {
-      const body = await readJson(request);
+      if (productionMode) {
+        return json({
+          error: "development app attest registration is disabled in production"
+        }, { status: 403 });
+      }
+
+      const body = await readJson(request, { maxJsonBodyBytes });
+      if (body instanceof Response) {
+        return body;
+      }
+
       if (!body.keyId) {
         return json({ error: "keyId is required" }, { status: 400 });
       }
@@ -33,8 +52,12 @@ export function createApi({ store = createMemoryStore(), now = () => new Date() 
     }
 
     if (request.method === "POST" && url.pathname === "/v1/pulse-proofs") {
-      const body = await readJson(request);
-      return submitProof({ body, store, now: now() });
+      const body = await readJson(request, { maxJsonBodyBytes });
+      if (body instanceof Response) {
+        return body;
+      }
+
+      return submitProof({ body, store, now: now(), productionMode });
     }
 
     const proofMatch = url.pathname.match(/^\/v1\/pulse-proofs\/([^/]+)$/u);
@@ -51,10 +74,17 @@ export function createApi({ store = createMemoryStore(), now = () => new Date() 
   };
 }
 
-async function submitProof({ body, store, now }) {
+async function submitProof({ body, store, now, productionMode }) {
   const envelope = body.envelope;
   if (!envelope) {
     return json({ error: "envelope is required" }, { status: 400 });
+  }
+
+  if (productionMode) {
+    const policy = validateProductionProofPolicy(envelope);
+    if (!policy.ok) {
+      return json({ error: policy.error }, { status: 403 });
+    }
   }
 
   const challenge = store.getChallenge(envelope.challengeId);
@@ -108,8 +138,37 @@ async function submitProof({ body, store, now }) {
   }, { status: 201 });
 }
 
-async function readJson(request) {
-  const text = await request.text();
+async function readJson(request, { maxJsonBodyBytes }) {
+  const contentLength = Number(request.headers.get("content-length") ?? 0);
+  if (Number.isFinite(contentLength) && contentLength > maxJsonBodyBytes) {
+    return json({ error: "request body too large" }, { status: 413 });
+  }
+
+  let totalBytes = 0;
+  const decoder = new TextDecoder();
+  let text = "";
+
+  if (request.body) {
+    const reader = request.body.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+
+      totalBytes += value.byteLength;
+      if (totalBytes > maxJsonBodyBytes) {
+        return json({ error: "request body too large" }, { status: 413 });
+      }
+
+      text += decoder.decode(value, { stream: true });
+    }
+
+    text += decoder.decode();
+  } else {
+    text = await request.text();
+  }
+
   if (!text) {
     return {};
   }
@@ -117,8 +176,26 @@ async function readJson(request) {
   try {
     return JSON.parse(text);
   } catch {
-    return {};
+    return json({ error: "malformed json" }, { status: 400 });
   }
+}
+
+function validateProductionProofPolicy(envelope) {
+  if (envelope?.appIntegrity?.provider === "development-app-attest") {
+    return {
+      ok: false,
+      error: "development app integrity evidence is disabled in production"
+    };
+  }
+
+  if (envelope?.zk?.scheme === "none" || envelope?.zk?.scheme === "mock-score-threshold-v0") {
+    return {
+      ok: false,
+      error: "mock zk evidence is disabled in production"
+    };
+  }
+
+  return { ok: true };
 }
 
 function json(value, { status = 200, headers = {} } = {}) {
