@@ -81,6 +81,7 @@ Verifier
 - `docs/research-notes.md` - current platform and privacy constraints.
 - `docs/proof-envelope.md` - draft proof payload shape.
 - `docs/threat-model.md` - first-pass abuse cases and mitigations.
+- `docs/idea-design-review.md` - multi-agent idea-level design review: weaknesses, corrections, and strategic recommendations.
 - `docs/zk-uniqueness-plan.md` - ZK and unique-humanity roadmap.
 
 ## Status
